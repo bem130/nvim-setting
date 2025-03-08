@@ -1,85 +1,69 @@
 -------------------------------------------------
--- General Settings / 一般設定
+-- エディタの基本設定
 -------------------------------------------------
-vim.o.number = true -- Enable line numbers / 行番号を有効にする
+-- 行の位置を把握しやすくする
+vim.o.number = true
 vim.o.relativenumber = false
+-- 長い行を折り返さない（横スクロールで表示）
 vim.o.wrap = false
-vim.o.tabstop = 4 -- Tab width / タブ幅
-vim.o.shiftwidth = 4 -- Indentation width / インデント幅
-vim.o.expandtab = true -- Use spaces instead of tabs / タブの代わりにスペースを使用
-vim.o.cursorline = true -- Highlight the current line / カーソル行をハイライトする
-vim.o.termguicolors = true -- Enable true colors / 24bitカラーを有効にする
-vim.opt.clipboard = "unnamedplus" -- Use system clipboard / システムクリップボードを使用
+-- インデントの設定（4スペースをタブとして扱う）
+vim.o.tabstop = 4
+vim.o.shiftwidth = 4
+vim.o.expandtab = true
+-- カーソル位置を見やすくする
+vim.o.cursorline = true
+-- モダンな配色を可能にする, 24bits color
+vim.o.termguicolors = true
+-- OSのクリップボードと連携
+vim.opt.clipboard = "unnamedplus"
+-- 文字化けを防ぐ
 vim.scriptencoding = 'utf-8'
 vim.opt.encoding = 'utf-8'
 vim.opt.fileencoding = 'utf-8'
+-- 作業中のファイルを保護しない（git等で管理することを前提）
 vim.opt.swapfile = false
 
 -------------------------------------------------
--- Key Mappings / キーマッピング
+-- キーマッピング（ショートカット）の設定
 -------------------------------------------------
--- Set leader key to space / Leaderキーをスペースに設定
+-- Spaceキーをショートカットの起点にする
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- Basic keymaps / 基本的なキーマップ
-vim.keymap.set('n', '<leader>w', ':w<CR>', {
-    noremap = true,
-    silent = true,
-}) -- Save
-vim.keymap.set('n', '<leader>q', ':q<CR>', {
-    noremap = true,
-    silent = true,
-}) -- Quit
-vim.keymap.set('n', '<leader>h', ':noh<CR>', {
-    noremap = true,
-    silent = true,
-}) -- Clear search highlight
+-- 基本的な操作のショートカット
+vim.keymap.set('n', '<leader>w', ':w<CR>', { noremap = true, silent = true })  -- 作業内容を保存
+vim.keymap.set('n', '<leader>q', ':q<CR>', { noremap = true, silent = true })  -- エディタを閉じる
+vim.keymap.set('n', '<leader>h', ':noh<CR>', { noremap = true, silent = true })  -- 検索結果のハイライトを消す
 
--- Window navigation / ウィンドウ操作
-vim.keymap.set('n', '<leader>v', ':vsplit<CR>', {
-    noremap = true,
-    silent = true,
-}) -- Vertical split
-vim.keymap.set('n', '<leader>s', ':split<CR>', {
-    noremap = true,
-    silent = true,
-}) -- Horizontal split
+-- 画面分割の操作
+vim.keymap.set('n', '<leader>v', ':vsplit<CR>', { noremap = true, silent = true })  -- 画面を左右に分割
+vim.keymap.set('n', '<leader>s', ':split<CR>', { noremap = true, silent = true })   -- 画面を上下に分割
 
--- File explorer / ファイルエクスプローラー
-vim.keymap.set('n', '<leader>e', ':Neotree toggle<CR>', {
-    noremap = true,
-    silent = true,
-})
+-- ファイルツリーの表示切替
+vim.keymap.set('n', '<leader>e', ':Neotree toggle<CR>', { noremap = true, silent = true })
 
--- Terminal / ターミナル
-vim.keymap.set('n', '<leader>t', ':terminal<CR>', {
-    noremap = true,
-    silent = true,
-})
-vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', {
-    noremap = true,
-    silent = true,
-}) -- Terminal escape
+-- ターミナル操作
+vim.keymap.set('n', '<leader>t', ':terminal<CR>', { noremap = true, silent = true })  -- ターミナルを開く
+vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { noremap = true, silent = true })  -- ターミナルから抜ける
 
--- Trouble / エラーリスト
-vim.keymap.set('n', '<leader>xx', ':TroubleToggle<CR>', {
-    noremap = true,
-    silent = true,
-})
+-- 問題の一覧表示
+vim.keymap.set('n', '<leader>xx', ':TroubleToggle<CR>', { noremap = true, silent = true })
 
--- Git / Gitコマンド
-vim.keymap.set('n', '<leader>g', ':Neotree float git_status<CR>', {
-    noremap = true,
-    silent = true,
-})
+-- Gitの状態確認
+vim.keymap.set('n', '<leader>g', ':Neotree float git_status<CR>', { noremap = true, silent = true })
 
 -------------------------------------------------
--- Bootstrap lazy.nvim / lazy.nvim ブートストラップ
+-- プラグインマネージャーの設定
 -------------------------------------------------
+-- lazy.nvimが存在しない場合はインストール
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
-    vim.fn.system({"git", "clone", "--filter=blob:none", "https://github.com/folke/lazy.nvim.git", "--branch=stable", lazypath})
+    vim.fn.system({
+        "git", "clone", "--filter=blob:none",
+        "https://github.com/folke/lazy.nvim.git",
+        "--branch=stable",  -- 安定版を使用
+        lazypath,
+    })
 end
 vim.opt.rtp:prepend(lazypath)
 
@@ -342,12 +326,14 @@ require("ibl").setup {
 }
 
 -------------------------------------------------
--- Colorscheme and Custom Highlights / カラースキームとカスタムハイライト
+-- エディタの見た目の設定
 -------------------------------------------------
+-- ダークモードをベースにする
 vim.o.background = 'dark'
+-- VSCodeライクな見た目に設定
 vim.cmd('colorscheme vscode')
 
--- VSCode-like editor colors
+-- エディタ全体の配色
 vim.api.nvim_set_hl(0, 'Normal', { bg = '#000000', fg = '#D4D4D4' })
 vim.api.nvim_set_hl(0, 'SignColumn', { bg = '#000000' })
 vim.api.nvim_set_hl(0, 'LineNr', { fg = '#505050' })
@@ -355,7 +341,7 @@ vim.api.nvim_set_hl(0, 'CursorLine', { bg = '#1A1A1A' })
 vim.api.nvim_set_hl(0, 'CursorLineNr', { fg = '#C6C6C6' })
 vim.api.nvim_set_hl(0, 'Visual', { bg = '#264F78' })
 
--- Syntax highlighting colors
+-- コードの要素ごとの配色
 vim.api.nvim_set_hl(0, '@variable', { fg = '#9CDCFE' })
 vim.api.nvim_set_hl(0, '@function', { fg = '#DCDCAA' })
 vim.api.nvim_set_hl(0, '@keyword', { fg = '#C586C0' })
