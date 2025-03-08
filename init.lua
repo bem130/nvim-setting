@@ -171,17 +171,18 @@ require("lazy").setup({ -- Neo-tree: File Explorer
     }, -- LSP Support
     {
         'neovim/nvim-lspconfig',
-        dependencies = {'williamboman/mason.nvim', 'williamboman/mason-lspconfig.nvim'},
+        dependencies = {'williamboman/mason.nvim', 'williamboman/mason-lspconfig.nvim', 'saghen/blink.cmp'},
         config = function()
             -- Mason setup
             require("mason").setup()
             require("mason-lspconfig").setup({
-                ensure_installed = {"lua_ls", -- Lua
-                "pyright", -- Python
-                "ts_ls", -- TypeScript/JavaScript (updated from tsserver)
-                "rust_analyzer", -- Rust
-                "cssls", -- CSS
-                "html" -- HTML
+                ensure_installed = {
+                    "lua_ls",       -- Lua
+                    "pyright",      -- Python
+                    "ts_ls",        -- TypeScript/JavaScript
+                    "rust_analyzer",-- Rust
+                    "cssls",        -- CSS
+                    "html"          -- HTML
                 },
                 automatic_installation = true,
             })
@@ -196,6 +197,23 @@ require("lazy").setup({ -- Neo-tree: File Explorer
                         filetypes = {"typescript", "javascript", "javascriptreact", "typescriptreact"},
                         root_dir = lspconfig.util.root_pattern("package.json", "tsconfig.json", "jsconfig.json"),
                     })
+                elseif lsp == 'rust_analyzer' then
+                    -- Rust LSP specific settings
+                    lspconfig[lsp].setup({
+                        settings = {
+                            ["rust-analyzer"] = {
+                                cargo = {
+                                    allFeatures = true,  -- Enable all cargo features
+                                },
+                                checkOnSave = {
+                                    command = "clippy"   -- Run Clippy when saving files
+                                },
+                                procMacro = {
+                                    enable = true        -- Enable procedural macros
+                                },
+                            }
+                        }
+                    })
                 else
                     lspconfig[lsp].setup {}
                 end
@@ -209,6 +227,10 @@ require("lazy").setup({ -- Neo-tree: File Explorer
                 update_in_insert = true,
                 severity_sort = true
             })
+
+            local capabilities = require('blink.cmp').get_lsp_capabilities()
+            local lspconfig = require('lspconfig')
+            lspconfig['lua_ls'].setup({ capabilities = capabilities })
         end
     }, -- LSPSaga for enhanced LSP UI
     {
@@ -284,15 +306,35 @@ require("lazy").setup({ -- Neo-tree: File Explorer
                 }
             })
         end
-    }, {
+    },
+    {
         "lukas-reineke/indent-blankline.nvim",
         main = "ibl",
         opts = {},
         config = function()
             require("ibl").setup()
         end
+    },
+    { -- https://cmp.saghen.dev/installation
+        'saghen/blink.cmp',
+        dependencies = 'rafamadriz/friendly-snippets',
+        version = '*',
+        opts = {
+            keymap = { preset = 'default' },
+            appearance = {
+                use_nvim_cmp_as_default = true,
+                nerd_font_variant = 'mono'
+            },
+            sources = {
+                default = { 'lsp', 'path', 'snippets', 'buffer' },
+            },
+            fuzzy = { implementation = "prefer_rust_with_warning" }
+        },
+        opts_extend = { "sources.default" }
     }
 })
+
+-- indent-blankline
 
 local highlight = {"Whitespace", "RainbowRed", "RainbowYellow", "RainbowBlue", "RainbowOrange", "RainbowGreen", "RainbowViolet", "RainbowCyan"}
 
@@ -463,7 +505,3 @@ vim.keymap.set('n', '<leader>fr', '<cmd>Telescope oldfiles<cr>', {
 -- Bufferline Setup / Bufferline 設定
 -------------------------------------------------
 require("bufferline").setup({})
-
--------------------------------------------------
--- End of Configuration / 設定の終わり
--------------------------------------------------
