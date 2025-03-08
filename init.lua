@@ -14,6 +14,7 @@ vim.scriptencoding = 'utf-8'
 vim.opt.encoding = 'utf-8'
 vim.opt.fileencoding = 'utf-8'
 vim.opt.swapfile = false
+vim.opt.clipboard:append("unnamedplus")
 
 -------------------------------------------------
 -- Key Mappings / キーマッピング
@@ -198,7 +199,91 @@ require("lazy").setup({
         })
     end
   },
-  -- etc.
+
+  -- LSP Support
+  {
+    'neovim/nvim-lspconfig',
+    dependencies = {
+        'williamboman/mason.nvim',
+        'williamboman/mason-lspconfig.nvim',
+    },
+    config = function()
+        -- Mason setup
+        require("mason").setup()
+        require("mason-lspconfig").setup({
+            ensure_installed = {
+                "lua_ls",         -- Lua
+                "pyright",        -- Python
+                "ts_ls",         -- TypeScript/JavaScript (updated from tsserver)
+                "rust_analyzer",  -- Rust
+                "cssls",         -- CSS
+                "html",          -- HTML
+            },
+            automatic_installation = true,
+        })
+
+        -- LSP servers setup
+        local lspconfig = require('lspconfig')
+        local servers = { 'lua_ls', 'pyright', 'ts_ls', 'rust_analyzer', 'cssls', 'html' }
+        for _, lsp in ipairs(servers) do
+            if lsp == 'ts_ls' then
+                -- TypeScript LSP specific settings
+                lspconfig[lsp].setup({
+                    filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact" },
+                    root_dir = lspconfig.util.root_pattern("package.json", "tsconfig.json", "jsconfig.json"),
+                })
+            else
+                lspconfig[lsp].setup{}
+            end
+        end
+
+        -- Diagnostic configuration
+        vim.diagnostic.config({
+            virtual_text = false,
+            signs = true,
+            underline = true,
+            update_in_insert = true,
+            severity_sort = true,
+        })
+    end
+  },
+
+  -- LSPSaga for enhanced LSP UI
+  {
+    "nvimdev/lspsaga.nvim",
+    event = "LspAttach",
+    dependencies = {
+        "nvim-treesitter/nvim-treesitter",
+        "nvim-tree/nvim-web-devicons",
+        "neovim/nvim-lspconfig",
+    },
+    config = function()
+        require("lspsaga").setup({
+            ui = {
+                border = "rounded",
+            },
+            lightbulb = {
+                enable = false,  -- 一時的に無効化
+            },
+            symbol_in_winbar = {
+                enable = false,  -- 一時的に無効化
+            },
+        })
+
+        -- LSPSaga用のキーマップ
+        local keymap = vim.keymap.set
+        keymap('n', 'gd', '<cmd>Lspsaga peek_definition<CR>', { desc = 'Peek Definition' })
+        keymap('n', 'gD', '<cmd>Lspsaga goto_definition<CR>', { desc = 'Goto Definition' })
+        keymap('n', 'gr', '<cmd>Lspsaga finder<CR>', { desc = 'Find References' })
+        keymap('n', 'gh', '<cmd>Lspsaga hover_doc<CR>', { desc = 'Hover Documentation' })
+        keymap('n', '<leader>ca', '<cmd>Lspsaga code_action<CR>', { desc = 'Code Action' })
+        keymap('n', '<leader>rn', '<cmd>Lspsaga rename<CR>', { desc = 'Rename' })
+        keymap('n', '<leader>cd', '<cmd>Lspsaga show_line_diagnostics<CR>', { desc = 'Line Diagnostics' })
+        keymap('n', '[d', '<cmd>Lspsaga diagnostic_jump_prev<CR>', { desc = 'Previous Diagnostic' })
+        keymap('n', ']d', '<cmd>Lspsaga diagnostic_jump_next<CR>', { desc = 'Next Diagnostic' })
+        keymap('n', '<leader>o', '<cmd>Lspsaga outline<CR>', { desc = 'Show Outline' })
+    end
+  },
 })
 
 -------------------------------------------------
