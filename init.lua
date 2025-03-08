@@ -2,8 +2,8 @@
 -- General Settings / 一般設定
 -------------------------------------------------
 vim.o.number         = true              -- Enable line numbers / 行番号を有効にする
+vim.o.relativenumber = false
 vim.o.wrap = false
-vim.o.relativenumber = false              -- Enable relative numbering / 相対行番号を有効にする
 vim.o.tabstop        = 4                 -- Tab width / タブ幅
 vim.o.shiftwidth     = 4                 -- Indentation width / インデント幅
 vim.o.expandtab      = true              -- Use spaces instead of tabs / タブの代わりにスペースを使用
@@ -14,7 +14,6 @@ vim.scriptencoding = 'utf-8'
 vim.opt.encoding = 'utf-8'
 vim.opt.fileencoding = 'utf-8'
 vim.opt.swapfile = false
-vim.opt.clipboard:append("unnamedplus")
 
 -------------------------------------------------
 -- Key Mappings / キーマッピング
@@ -141,35 +140,18 @@ require("lazy").setup({
             },
             highlight = {
                 enable = true,
-                additional_vim_regex_highlighting = false,
+                -- additional_vim_regex_highlighting = false,
             },
             indent = { enable = true },
         })
-    end
-  },
-
-  -- Tree-sitterプラグイン設定を更新
-  {
-    "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate",
-    config = function()
-        require("nvim-treesitter.configs").setup({
-            ensure_installed = { "lua", "vim" },  -- 最初は最小限のパーサーから始める
-            highlight = {
-                enable = true,
-                disable = {},
-            },
-            indent = { enable = true },
-            auto_install = false,  -- 自動インストールを無効化
-        })
-
         -- Windowsでのコンパイラ設定
         require("nvim-treesitter.install").compilers = { "clang", "gcc" }
+
         
         -- パーサーインストールディレクトリの設定
         vim.opt.runtimepath:append(vim.fn.stdpath("data") .. "/tree-sitter")
         vim.cmd([[set runtimepath+=]] .. vim.fn.stdpath("data") .. "/tree-sitter")
-    end,
+    end
   },
 
   -- Modern colorscheme
@@ -338,8 +320,54 @@ require("lazy").setup({
             }
         })
     end,
-  },
+    },
+    {
+        "lukas-reineke/indent-blankline.nvim",
+        main = "ibl",
+        ---@module "ibl"
+        ---@type ibl.config
+        opts = {},
+        config = function()
+        require("ibl").setup()
+        end,
+    }
 })
+
+
+local highlight = {
+    "Whitespace",
+    "RainbowRed",
+    "RainbowYellow",
+    "RainbowBlue",
+    "RainbowOrange",
+    "RainbowGreen",
+    "RainbowViolet",
+    "RainbowCyan",
+}
+
+local hooks = require "ibl.hooks"
+-- create the highlight groups in the highlight setup hook, so they are reset
+-- every time the colorscheme changes
+hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
+    vim.api.nvim_set_hl(0, "RainbowRed", { fg = "#804C25" })
+    vim.api.nvim_set_hl(0, "RainbowYellow", { fg = "#75703B" })
+    vim.api.nvim_set_hl(0, "RainbowBlue", { fg = "#417FAF" })
+    vim.api.nvim_set_hl(0, "RainbowOrange", { fg = "#B19A66" })
+    vim.api.nvim_set_hl(0, "RainbowGreen", { fg = "#98C379" })
+    vim.api.nvim_set_hl(0, "RainbowViolet", { fg = "#C678DD" })
+    vim.api.nvim_set_hl(0, "RainbowCyan", { fg = "#56B6C2" })
+end)
+hooks.register(hooks.type.SCOPE_HIGHLIGHT, hooks.builtin.scope_highlight_from_extmark)
+
+vim.g.rainbow_delimiters = { highlight = highlight }
+require("ibl").setup {
+    indent = { highlight = highlight, char = "." },
+    whitespace = {
+        highlight = highlight,
+        remove_blankline_trail = false,
+    },
+    scope = { highlight = highlight },
+}
 
 -------------------------------------------------
 -- Colorscheme and Custom Highlights / カラースキームとカスタムハイライト
@@ -386,7 +414,7 @@ require('lualine').setup({
     sections = {
         lualine_a = { 'mode' },
         lualine_b = { 'branch', 'diff', 'diagnostics' },
-        lualine_c = { 'filename' },
+        lualine_c = { {'filename',path=1} },
         lualine_x = { 'encoding', 'fileformat', 'filetype' },
         lualine_y = { 'progress' },
         lualine_z = { 'location' },
@@ -422,7 +450,7 @@ local function setup_workspace_layout()
     vim.cmd("terminal powershell -NoExit -Command 'cd \"" .. cwd .. "\"'")  -- Open terminal in current directory / 現在のディレクトリでターミナルを開く
 
     -- エラー一覧を開く
-    vim.cmd("Trouble")
+    -- vim.cmd("Trouble")
 
     -- 左下に Git 状態を表示
     vim.cmd("wincmd h")
@@ -472,6 +500,7 @@ vim.keymap.set('n', '<leader>fr', '<cmd>Telescope oldfiles<cr>', { noremap = tru
 -- Bufferline Setup / Bufferline 設定
 -------------------------------------------------
 require("bufferline").setup({})
+
 
 -------------------------------------------------
 -- End of Configuration / 設定の終わり
