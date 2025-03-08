@@ -1,3 +1,5 @@
+local cwd = vim.loop.cwd()
+
 -------------------------------------------------
 -- エディタの基本設定
 -------------------------------------------------
@@ -36,8 +38,8 @@ vim.keymap.set('n', '<leader>q', ':q<CR>', { noremap = true, silent = true })  -
 vim.keymap.set('n', '<leader>h', ':noh<CR>', { noremap = true, silent = true })  -- 検索結果のハイライトを消す
 
 -- 画面分割の操作
-vim.keymap.set('n', '<leader>v', ':vsplit<CR>', { noremap = true, silent = true })  -- 画面を左右に分割
-vim.keymap.set('n', '<leader>s', ':split<CR>', { noremap = true, silent = true })   -- 画面を上下に分割
+vim.keymap.set('n', 'sv', ':vsplit<CR>', { noremap = true, silent = true })  -- 画面を左右に分割
+vim.keymap.set('n', 'sh', ':split<CR>', { noremap = true, silent = true })   -- 画面を上下に分割
 
 -- ファイルツリーの表示切替
 vim.keymap.set('n', '<leader>e', ':Neotree toggle<CR>', { noremap = true, silent = true })
@@ -51,6 +53,9 @@ vim.keymap.set('n', '<leader>xx', ':TroubleToggle<CR>', { noremap = true, silent
 
 -- Gitの状態確認
 vim.keymap.set('n', '<leader>g', ':Neotree float git_status<CR>', { noremap = true, silent = true })
+
+
+vim.keymap.set('n', 'tt', ":terminal powershell -NoExit -Command 'cd \"" .. cwd .. "\"'<CR>", { noremap = true, silent = true })-- ターミナルを追加
 
 -------------------------------------------------
 -- プラグインマネージャーの設定
@@ -446,7 +451,6 @@ local function setup_workspace_layout()
     vim.cmd("wincmd L")
 
     -- 右下にターミナルを開く
-    local cwd = vim.loop.cwd()
     vim.cmd("terminal powershell -NoExit -Command 'cd \"" .. cwd .. "\"'") -- Open terminal in current directory / 現在のディレクトリでターミナルを開く
     vim.cmd("split")
     vim.cmd("terminal powershell -NoExit -Command 'cd \"" .. cwd .. "\"'") -- Open terminal in current directory / 現在のディレクトリでターミナルを開く
@@ -505,3 +509,9 @@ vim.keymap.set('n', '<leader>fr', '<cmd>Telescope oldfiles<cr>', {
 -- Bufferline Setup / Bufferline 設定
 -------------------------------------------------
 require("bufferline").setup({})
+
+
+-- terminal
+
+vim.cmd("autocmd TermOpen * :startinsert")
+vim.cmd("autocmd TermOpen * setlocal nonumber")
